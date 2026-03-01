@@ -78,16 +78,16 @@ The sample JSON files (`file1.json`, `file2.json`, `tweets.json`) are real expor
 The project is broken into three automated stages:
 
 ```
-┌─────────────────────┐     ┌──────────────────────┐     ┌─────────────────────┐
-│   1. DATA           │     │   2. CLASSIFICATION   │     │   3. OUTPUT         │
-│                     │     │                       │     │                     │
-│  Apify scraper      │────▶│  BERT model reads     │────▶│  Excel file with    │
-│  collects all       │     │  each tweet and       │     │  every tweet        │
-│  #COP28 tweets      │     │  labels it:           │     │  colour-coded       │
-│  from X and         │     │  Neutral /            │     │  + pie chart        │
-│  exports as JSON    │     │  Offensive /          │     │  + bar chart        │
-│                     │     │  Hate                 │     │                     │
-└─────────────────────┘     └──────────────────────┘     └─────────────────────┘
+┌─────────────────────┐      ┌──────────────────────┐     ┌─────────────────────┐
+│   1. DATA           │      │  2. CLASSIFICATION   │     │   3. OUTPUT         │
+│                     │      │                      │     │                     │
+│  Apify scraper      │────▶│  BERT model reads    │────▶│  Excel file with    │
+│  collects all       │      │  each tweet and      │     │  every tweet        │
+│  #COP28 tweets      │      │  labels it:          │     │  colour-coded       │
+│  from X and         │      │  Neutral /           │     │  + pie chart        │
+│  exports as JSON    │      │  Offensive /         │     │  + bar chart        │
+│                     │      │  Hate                │     │                     │
+└─────────────────────┘      └──────────────────────┘     └─────────────────────┘
 ```
 
 ### Stage 1 — Data Collection (Apify)
@@ -261,7 +261,7 @@ The recreation shows a significantly higher neutral rate than the original study
 
 ---
 
-👉 Looking for the desktop app version? See [cop28-hate-speech-app](https://github.com/onur-cubukcu/cop28-hate-speech-app)
+👉  Desktop app version can be found here [cop28-hate-speech-app](https://github.com/onur-cubukcu/cop28-hate-speech-app)
 
 *Course: Language in the Media — TU Dortmund, Faculty of Cultural Studies, WiSe 2023/2024*
 *Originally submitted: February 2024 | Recreated for portfolio: February 2026*
