@@ -3,6 +3,7 @@
 > **Portfolio Recreation** — This project was originally completed as a graded assignment for the course *Language in the Media* (WiSe 2023/2024) at TU Dortmund, Faculty of Cultural Studies, in collaboration with a fellow student. The original files were lost after submission. This repository is a recreation of the pipeline rebuilt from scratch for portfolio purposes, based on the original poster and methodology.
 
 **Grade received:** 1.7 (German grading scale) — equivalent to a B+/A-
+
 **Original poster:** [View PDF](poster.pdf)
 
 > **Note on results:** The recreation produces different results from the original study. This is expected and is explained by two factors of limiations: (1) the original classification model (`ctoraman/hate-speech-bert`) could not been reused in recreation of the pipeline and had to be replaced with a functionally similar but a more conservative (not to judge hatefulness) alternative, and (2) tweet collection(s) via Apify in 2026 returns a different sample than what was collected live during the conference in 2023 — archive availability, scraper behaviour, and the use of different actors to scrape the datasets all affect which tweets are retrieved. The methodology and pipeline logic are reproduced; the differences in output are documented and discussed in the Limitations section.
