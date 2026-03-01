@@ -174,12 +174,12 @@ A Summary sheet shows the overall counts and percentages. Two charts (pie and ba
 
 For the primary pipeline:
 ```bash
-git clone https://github.com/YOUR_USERNAME/cop28-hate-speech.git
+git clone https://github.com/onur-cubukcu/cop28-hate-speech.git
 ```
 
 For the alternative pipeline:
 ```bash
-git clone --branch scweet https://github.com/YOUR_USERNAME/cop28-hate-speech.git
+git clone --branch scweet https://github.com/onur-cubukcu/cop28-hate-speech.git
 ```
 
 ### Step 2 — Install dependencies
