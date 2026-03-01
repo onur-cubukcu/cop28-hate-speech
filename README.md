@@ -62,14 +62,13 @@ During the recreation process, the first actor used was `altimis/scweet` (the `s
 │
 ── file1.json            # Sample raw Apify export (apidojo/twitter-scraper-lite format)
 ── file2.json            # Second sample raw export — shows deduplication when merged
-── tweets.json           # Merged, deduplicated, English-only output of file1 + file2
 │
 ── results.xlsx          # Classification output from the full 11,996-tweet dataset
 ── charts/
 │   ── pie_chart.png     # Distribution pie chart
 │   └── bar_chart.png    # Breakdown bar chart
 ```
-The sample JSON files (`file1.json`, `file2.json`, `tweets.json`) are real exports from the `apidojo/twitter-scraper-lite` actor collected during COP28. They are included so you can run the pipeline immediately without needing an Apify account. `results.xlsx` and the charts show the output from the full dataset run.
+The sample JSON files (`file1.json` [trimmed for size], `file2.json`) are real exports from the `apidojo/twitter-scraper-lite` actor collected during COP28. They are included so you can run the pipeline immediately without needing an Apify account. `results.xlsx` and the charts show the output from the full dataset run.
 
 ---
 
