@@ -37,6 +37,5 @@ desktop.ini
 *.swo
 
 # ── Output files ─────────────────────────────
-charts/
 demo_output/
 cop28_results.xlsx
