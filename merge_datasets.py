@@ -1,11 +1,14 @@
 """
 merge_datasets.py
 -----------------
-Merges multiple Apify JSON exports into one deduplicated English-only file.
-Supports both old (altimis/scweet) and new (apidojo/twitter-scraper-lite) formats.
+Merges multiple daily Apify JSON exports into a single deduplicated
+tweets.json, keeping only English tweets.
 
 Usage:
-    python merge_datasets.py file1.json file2.json ...
+    python merge_datasets.py day1.json day2.json day3.json ...
+
+Output:
+    tweets.json  (English only, deduplicated, ready for pipeline.py)
 """
 
 import json
@@ -13,24 +16,9 @@ import sys
 from pathlib import Path
 
 
-def get_lang(item):
-    """Get language from either actor format."""
-    if "createdAt" in item:
-        return item.get("lang", "")
-    else:
-        if isinstance(item.get("tweet"), dict):
-            return item["tweet"].get("lang", "")
-        return item.get("lang", "")
-
-
-def get_id(item):
-    """Get tweet ID from either actor format."""
-    return str(item.get("id") or item.get("id_str") or "")
-
-
 def merge(files):
-    seen_ids      = set()
-    all_tweets    = []
+    seen_ids   = set()
+    all_tweets = []
     skipped_lang  = 0
     skipped_dupes = 0
 
@@ -45,11 +33,14 @@ def merge(files):
 
         file_added = 0
         for tweet in data:
-            if get_lang(tweet) != "en":
+            # --- Language filter: keep only English ---
+            lang = tweet.get("tweet", {}).get("lang", "") or tweet.get("lang", "")
+            if lang != "en":
                 skipped_lang += 1
                 continue
 
-            tweet_id = get_id(tweet)
+            # --- Deduplicate by ID ---
+            tweet_id = str(tweet.get("id") or tweet.get("id_str") or "")
             if tweet_id and tweet_id in seen_ids:
                 skipped_dupes += 1
                 continue
@@ -74,6 +65,6 @@ def merge(files):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python merge_datasets.py file1.json file2.json ...")
+        print("Usage: python merge_datasets.py day1.json day2.json ...")
         sys.exit(1)
     merge(sys.argv[1:])

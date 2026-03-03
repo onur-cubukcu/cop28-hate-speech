@@ -1,9 +1,27 @@
 """
 COP28 Hate Speech Detection Pipeline
 =====================================
-Supports two Apify actor formats:
-  - apidojo/twitter-scraper-lite  (new: camelCase fields)
-  - altimis/scweet                (old: snake_case fields)
+Reads scraped tweets (from Apify), classifies each one, writes results
+to Excel, and produces charts.
+
+Classification approach (faithful to original Toraman22 methodology):
+  Step 1 — cardiffnlp/twitter-roberta-base-offensive
+           Trained on Twitter data. Detects offensive language broadly
+           (profanity, insults, angry language).
+           Labels: offensive / not-offensive
+
+  Step 2 — Violence keyword check on offensive tweets
+           If an offensive tweet contains threat/violence keywords
+           it is escalated to "Hate", otherwise stays "Offensive".
+
+  Final labels:
+      0 → Neutral    (not offensive)
+      1 → Offensive  (offensive but no violence keywords)
+      2 → Hate       (offensive + violence/threat keywords)
+
+This mirrors the original study's description:
+  "the AI module only detects words such as swear words ('idiot') or
+   words associated with violence ('kill', 'shoot')"
 
 Usage
 -----
@@ -12,6 +30,7 @@ Usage
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -22,11 +41,12 @@ from openpyxl.utils import get_column_letter
 
 MODEL_NAME = "cardiffnlp/twitter-roberta-base-offensive"
 
-VIOLENCE_KEYWORDS = __import__('re').compile(
-    r"\b(kill|shoot|murder|bomb|attack|lynch|hang|stab|die|death threat|"
+# Keywords that escalate offensive → hate (threats/violence)
+VIOLENCE_KEYWORDS = re.compile(
+    r"\b(kill|shoot|murder|bomb|attack|lynch|hang|stab|gun|shoot|die|death threat|"
     r"destroy|eliminate|exterminate|execute|slaughter|massacre|hurt|harm|"
     r"beat|punch|rape|assault)\b",
-    __import__('re').IGNORECASE
+    re.IGNORECASE
 )
 
 COLORS = {
@@ -42,24 +62,12 @@ FILL_COLORS = {
 }
 
 
-def parse_tweet(item):
-    """Parse a tweet from either actor format into a unified dict."""
-    # --- New actor: apidojo/twitter-scraper-lite (camelCase) ---
-    if "createdAt" in item:
-        text   = item.get("text", "")
-        author = item.get("author", {}).get("userName", "") if isinstance(item.get("author"), dict) else ""
-        return {
-            "id":         item.get("id", ""),
-            "created_at": item.get("createdAt", ""),
-            "author":     author,
-            "text":       text.strip(),
-            "retweets":   item.get("retweetCount", 0),
-            "likes":      item.get("likeCount", 0),
-            "lang":       item.get("lang", ""),
-            "is_reply":   item.get("isReply", False),
-        }
-    # --- Old actor: altimis/scweet (snake_case) ---
-    else:
+def load_tweets(path):
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    rows = []
+    for item in data:
         text = item.get("full_text") or item.get("text") or ""
         if item.get("handle"):
             author = item["handle"]
@@ -67,35 +75,19 @@ def parse_tweet(item):
             author = item["user"].get("screen_name", "")
         else:
             author = item.get("author_id", "")
-        lang = item.get("tweet", {}).get("lang", "") if isinstance(item.get("tweet"), dict) else item.get("lang", "")
-        return {
+
+        rows.append({
             "id":         item.get("id_str") or item.get("id", ""),
             "created_at": item.get("created_at", ""),
             "author":     author,
             "text":       text.strip(),
             "retweets":   item.get("retweet_count", 0),
             "likes":      item.get("favorite_count", 0),
-            "lang":       lang,
-            "is_reply":   bool(item.get("tweet", {}).get("in_reply_to_status_id")),
-        }
+        })
 
-
-def load_tweets(path):
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    rows = [parse_tweet(item) for item in data]
     df = pd.DataFrame(rows)
     df = df[df["text"].str.len() > 0].reset_index(drop=True)
     print(f"[load]  Loaded {len(df)} tweets from '{path}'")
-
-    # Show language breakdown
-    lang_counts = df["lang"].value_counts().head(5)
-    print(f"[load]  Top languages: {dict(lang_counts)}")
-
-    # Show reply breakdown
-    reply_count = df["is_reply"].sum()
-    print(f"[load]  Replies: {reply_count} / {len(df)} ({reply_count/len(df)*100:.1f}%)")
     return df
 
 
@@ -122,16 +114,19 @@ def classify_all(df, clf):
     for i, text in enumerate(texts, start=1):
         try:
             result    = clf(text[:512])[0]
-            raw_label = result["label"].lower()
+            raw_label = result["label"].lower()   # "offensive" or "non-offensive"
             score     = round(result["score"], 4)
 
             if "non" in raw_label or raw_label == "not-offensive":
+                # Not offensive at all → Neutral
                 lid, lname = 0, "Neutral"
             else:
+                # Offensive — check for violence keywords to escalate to Hate
                 if VIOLENCE_KEYWORDS.search(text):
                     lid, lname = 2, "Hate"
                 else:
                     lid, lname = 1, "Offensive"
+
         except Exception as e:
             print(f"  [warn] Error on tweet {i}: {e}")
             lid, lname, score = 0, "Neutral", 0.0
@@ -196,6 +191,7 @@ def make_charts(df, output_dir, tag="#COP28"):
     pct    = values / values.sum() * 100
     colors = [COLORS[l] for l in labels]
 
+    # Pie chart
     fig, ax = plt.subplots(figsize=(7, 7))
     wedges, _, autotexts = ax.pie(
         values, labels=None, autopct="%1.2f%%", colors=colors,
@@ -203,7 +199,8 @@ def make_charts(df, output_dir, tag="#COP28"):
         pctdistance=0.75,
     )
     for at in autotexts:
-        at.set_fontsize(13); at.set_fontweight("bold")
+        at.set_fontsize(13)
+        at.set_fontweight("bold")
     legend_labels = [f"{l}  ({v:,}  |  {p:.2f}%)" for l, v, p in zip(labels, values, pct)]
     ax.legend(wedges, legend_labels, loc="lower center",
               bbox_to_anchor=(0.5, -0.08), ncol=1, frameon=False, fontsize=11)
@@ -213,6 +210,7 @@ def make_charts(df, output_dir, tag="#COP28"):
     plt.close(fig)
     print(f"[chart] Pie chart -> '{pie_path}'")
 
+    # Bar chart
     fig, ax = plt.subplots(figsize=(7, 5))
     bars = ax.bar(labels, pct, color=colors, edgecolor="white", linewidth=1.5, width=0.5)
     for bar, p in zip(bars, pct):
