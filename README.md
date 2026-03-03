@@ -1,5 +1,7 @@
 # Hate Speech Detection on X During COP28 🌍
 
+> **You are viewing the `scweet` branch** — this version of the pipeline uses the [`altimis/scweet`](https://apify.com/altimis/scweet) Apify actor (snake_case JSON format). For the primary pipeline using `apidojo/twitter-scraper-lite`, see the [`main` branch](https://github.com/onur-cubukcu/cop28-hate-speech).
+
 > **Portfolio Recreation** — This project was originally completed as a graded assignment for the course *Language in the Media* (WiSe 2023/2024) at TU Dortmund, Faculty of Cultural Studies, in collaboration with a fellow student. The original files were lost after submission. This repository is a recreation of the pipeline rebuilt from scratch for portfolio purposes, based on the original poster and methodology.
 
 **Grade received:** 1.7 (German grading scale) — equivalent to a B+/A-
@@ -174,7 +176,7 @@ A Summary sheet shows the overall counts and percentages. Two charts (pie and ba
 
 For the primary pipeline:
 ```bash
-git clone https://github.com/onur-cubukcu/cop28-hate-speech.git
+git clone --branch scweet https://github.com/onur-cubukcu/cop28-hate-speech.git
 ```
 
 For the alternative pipeline:
