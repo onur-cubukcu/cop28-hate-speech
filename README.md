@@ -174,12 +174,7 @@ A Summary sheet shows the overall counts and percentages. Two charts (pie and ba
 
 ### Step 1 — Clone the branch you want
 
-For the primary pipeline:
-```bash
-git clone --branch scweet https://github.com/onur-cubukcu/cop28-hate-speech.git
-```
-
-For the alternative pipeline:
+For the Scweet pipeline:
 ```bash
 git clone --branch scweet https://github.com/onur-cubukcu/cop28-hate-speech.git
 ```
